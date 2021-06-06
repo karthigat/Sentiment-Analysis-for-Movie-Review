@@ -2,14 +2,21 @@ import csv  # we need import file
 import pandas as pd
 import re
 import nltk
+#nltk.download('punkt')
+#nltk.download('stopwords')
+nltk.download('wordnet')
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from gensim.models.phrases import Phrases, Phraser
 from gensim.models import Word2Vec
 # from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
-from wordcloud import WordCloud
-import dask.dataframe as dd
+#from wordcloud import WordCloud
+#import dask.dataframe as dd
+from nltk.stem import PorterStemmer
+from nltk.tokenize import word_tokenize
+
+
 
 
 
@@ -59,6 +66,12 @@ def lemitization(sanitize):
         data_lem.append(lem)
     return data_lem
 
+def stemming(sanitize):
+    for j in sanitize:
+        stem = [ps.stem(i) for i in j]
+        data_stem.append(stem)
+    return data_stem
+
 def englishwords(sanitize):
     eng_words = set(nltk.corpus.words.words())
     # k = 'Io andiamo to the beach with my amico'
@@ -69,6 +82,11 @@ def englishwords(sanitize):
     # print(english_words)
     return english_words
 
+def lemitization(sanitize):
+    for j in sanitize:
+        lem = [lemiti.lemmatize(i) for i in j]
+        data_lem.append(lem)
+    return data_lem
 
 if __name__ == "__main__":
     data_lowercase = []
@@ -82,7 +100,10 @@ if __name__ == "__main__":
     bigrams = []
     english_words = []
     comment = []
+    data_stem = []
 
+    lemiti = WordNetLemmatizer()
+    ps = PorterStemmer()
 
     sentimet = pd.read_csv(r'prepd_data.csv', sep=",")
     # sentimet.encode('utf-8').strip()
@@ -91,5 +112,7 @@ if __name__ == "__main__":
     rm_url = url(lwr_case)
     punct = punctuation(rm_url)
     tokens = token(punct) #array of words
-    stop_word = stopWord(tokens) #
-    print(url)
+    stop_word = stopWord(tokens)
+    lemitize = lemitization(stop_word)
+    stemming = stemming(lemitize)
+    print(stemming)
