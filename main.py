@@ -2,6 +2,8 @@ import csv  # we need import file
 import pandas as pd
 import re
 import nltk
+from nltk import classify
+from nltk import NaiveBayesClassifier
 #nltk.download('punkt')
 #nltk.download('stopwords')
 nltk.download('wordnet')
@@ -116,3 +118,8 @@ if __name__ == "__main__":
     lemitize = lemitization(stop_word)
     stemming = stemming(lemitize)
     print(stemming)
+
+
+classifier = NaiveBayesClassifier.train(stemming)
+
+print("Accuracy is:", classify.accuracy(classifier, stemming))
