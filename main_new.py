@@ -28,6 +28,7 @@ from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 
 import re, string, random
+from bs4 import BeautifulSoup
 
 
 def lower_case(sanitize):
@@ -56,22 +57,47 @@ def token(sanitize):
     for i in sanitize:
         tokenize = nltk.word_tokenize(i)
         data_token.append(tokenize)
+        # print(data_token)
     return data_token
 
 
 def stopWord(sanitize):
     STOPWORDS = set(stopwords.words('english'))
+    word = "roses are red"
+    print(STOPWORDS)
     print("tokenize")
-    # print(tok)
+    # print(sanitize)
+    # lwr_case = sanitize.str.lower()
     for k in sanitize:
         # print(k)
-        # for i in k:
-        #     print(i)
-        #     if i not in STOPWORDS:
-        #         print(i)
-        s_words = [w for w in k if w not in STOPWORDS]
-        stopword_data.append(s_words)
-        # print(s_words)
+        for i in k:
+            if i not in STOPWORDS:
+                print(i)
+                sani_stopword.append(i)
+    stopword_data.append(sani_stopword)
+            # print(i)
+
+    # for k in word:
+    #     print(k)
+    # if sanitize not in STOPWORDS:
+    #     print(sanitize)
+        # print(k)
+
+
+    # print(tok)
+    # for k in sanitize:
+    #     print(k)
+    #     for i in k:
+    #         print(i)
+    #         if i not in STOPWORDS:
+    #             print(i)
+
+    # s_words = [w for w in sanitize if w not in STOPWORDS]
+    # print(s_words)
+                # stopword_data.append(s_words)
+                # stopword_data.append(i)
+
+    # print(s_words)
     return stopword_data
 
 
@@ -107,6 +133,7 @@ def remove_noise(tweet_tokens, stop_words=()):
 
         if len(token) > 0 and token not in string.punctuation and token.lower() not in stop_words:
             cleaned_tokens.append(token.lower())
+
     return cleaned_tokens
 
 
@@ -120,6 +147,24 @@ def get_tweets_for_model(cleaned_tokens_list):
     for tweet_tokens in cleaned_tokens_list:
         yield dict([token, True] for token in tweet_tokens)
 
+def strip_html_tags(text):
+    for i in text:
+        # print(i)
+        soup = BeautifulSoup(i, "html.parser")
+        # print(soup)
+        stripped_text = soup.get_text()
+        ren_htmltags.append(stripped_text)
+        # print(ren_htmltags)
+    return ren_htmltags
+
+def punctuation(sanitize):
+    for i in sanitize:
+        data_details_punct = re.sub(r'[^\w\s]','', i)
+        data_punct.append(data_details_punct)
+        # print(data_punct)
+        # data_details_punct = i.str.replace('[^\w\s]','')
+    return data_punct
+
 
 if __name__ == "__main__":
 
@@ -128,59 +173,71 @@ if __name__ == "__main__":
     data_punct = []
     data_token = []
     stopword_data = []
+    ren_htmltags = []
+    sani_stopword = []
 
-    sentiment_new = pd.read_csv(r'prepd_data.csv', sep=",")
+    sentiment_new = pd.read_csv(r'IMDB_dataset.csv', error_bad_lines=False, sep=',')
+    # sentiment_new.columns = ['sno','review','sentiment']
+    sentiment_new = sentiment_new.head(20)
+    sentiment_new['sentiment_words'] = sentiment_new.sentiment.apply(lambda x: 'positive' if x == 1 else 'negative')
     # print(sentiment_new)
-    positive_tweets_new = sentiment_new[sentiment_new['sentiment'].str.contains('positive')]
+
+    # positive_tweets_new = sentiment_new[sentiment_new['sentiment'].str.contains('positive')]
+    positive_tweets_new = sentiment_new[sentiment_new['sentiment_words'].str.contains('positive')]
     # print(positive_tweets_new)
-    negative_tweets_new = sentiment_new[sentiment_new['sentiment'].str.contains('negative')]
+    # positive_tweets_new = sentiment_new[sentiment_new['sentiment'].astype(int).contains(1)]
+    # print(positive_tweets_new)
+    # negative_tweets_new = sentiment_new[sentiment_new['sentiment'].str.contains('negative')]
+    negative_tweets_new = sentiment_new[sentiment_new['sentiment_words'].str.contains('negative')]
+    # print(negative_tweets_new)
 
     # positive token
     review_positive = positive_tweets_new['review']
     lwr_case_positive = lower_case(review_positive)
-    tokens_positive = token(lwr_case_positive)
-    print(tokens_positive)
-
-    rm_url_positive = url(lwr_case_positive)
-    punct_positive = punctuation(rm_url_positive)
-    tokens_positive = token(punct_positive)  # array of words
-    stop_word_positive = stopWord(tokens_positive)
+    review_positive_remhtml = strip_html_tags(lwr_case_positive)
+    remove_punct_positive = punctuation(review_positive_remhtml)
+    # print(review_positive_remhtml)
+    # lwr_case_positive = lower_case(review_positive)
+    # # tokens_positive = token(lwr_case_positive)
+    # # print(tokens_positive)
+    #
+    # rm_url_positive = url(lwr_case_positive)
+    # punct_positive = punctuation(rm_url_positive)
+    # tokens_positive = token(punct_positive)  # array of words
+    # stop_word_positive = stopWord(tokens_positive)
 
     # negative tokens
     review_negative = negative_tweets_new['review']
-    lwr_case = lower_case(review_negative)
-    tokens_negative = token(lwr_case)
-    rm_url_negative = url(lwr_case)
-    punct_negative = punctuation(rm_url_negative)
-    tokens_negative = token(punct_negative)  # array of words
-    stop_word_negative = stopWord(tokens_negative)
+    # remove_stopwords_negative = stopWord(review_negative)
+    lwr_case_negative = lower_case(review_negative)
+    review_negative_remhtml = strip_html_tags(lwr_case_negative)
+    # print(review_negative_remhtml)
+    remove_punct_negative = punctuation(review_negative_remhtml)
+    # lwr_case = lower_case(review_negative)
+    # tokens_negative = token(lwr_case)
+    # rm_url_negative = url(lwr_case)
+    # punct_negative = punctuation(rm_url_negative)
+    # tokens_negative = token(punct_negative)  # array of words
+    # stop_word_negative = stopWord(tokens_negative)
 
-    # print(stop_word)
-    print("working_1")
-    # print(negative_tweets_new)
-    # print("")
     # positive_tweets = twitter_samples.strings('positive_tweets.json')
-    # print(positive_tweets)
     # negative_tweets = twitter_samples.strings('negative_tweets.json')
-    # print(negative_tweets)
     # text = twitter_samples.strings('tweets.20150430-223406.json')
     # positive_tweet_token = positive_tweets_new.tokenized(positive_tweets_new)
-    # print(positive_tweet_token)
-    tweet_tokens = twitter_samples.tokenized('positive_tweets.json')[0]
-    # print(tweet_tokens)
+    # tweet_tokens = twitter_samples.tokenized('positive_tweets.json')[0]
     stop_words = stopwords.words('english')
-    # print(stop_words)
 
-    positive_tweet_tokens = twitter_samples.tokenized('positive_tweets.json')
+    # positive_tweet_tokens = twitter_samples.tokenized('positive_tweets.json')
+    positive_tweet_tokens = token(remove_punct_positive)
     # print(positive_tweet_tokens)
-    # positive_tweet_tokens = token(positive_tweets_new)
-    negative_tweet_tokens = twitter_samples.tokenized('negative_tweets.json')
+    remove_stopwords_negative = stopWord(positive_tweet_tokens)
+    # negative_tweet_tokens = twitter_samples.tokenized('negative_tweets.json')
+    negative_tweet_tokens = token(remove_punct_negative)
     # print(negative_tweet_tokens)
-    # negative_tweet_tokens = token(negative_tweets_new)
+    remove_stopwords_negative = stopWord(negative_tweet_tokens)
     positive_cleaned_tokens_list = []
     negative_cleaned_tokens_list = []
 
-    print("working_2")
     for tokens in positive_tweet_tokens:
         positive_cleaned_tokens_list.append(remove_noise(tokens, stop_words))
     # print(positive_cleaned_tokens_list)
@@ -193,11 +250,11 @@ if __name__ == "__main__":
     freq_dist_pos = FreqDist(all_pos_words)
     # print(freq_dist_pos.most_common(10))
 
-    positive_tokens_for_model = get_tweets_for_model(tokens_positive)
-    # positive_tokens_for_model = get_tweets_for_model(positive_cleaned_tokens_list)
+    # positive_tokens_for_model = get_tweets_for_model(tokens_positive)
+    positive_tokens_for_model = get_tweets_for_model(positive_cleaned_tokens_list)
     # print(positive_tokens_for_model)
-    negative_tokens_for_model = get_tweets_for_model(tokens_negative)
-    # negative_tokens_for_model = get_tweets_for_model(negative_cleaned_tokens_list)
+    # negative_tokens_for_model = get_tweets_for_model(tokens_negative)
+    negative_tokens_for_model = get_tweets_for_model(negative_cleaned_tokens_list)
     # print(negative_tokens_for_model)
 
     positive_dataset = [(tweet_dict, "Positive")
@@ -212,8 +269,10 @@ if __name__ == "__main__":
     # print(dataset)
     random.shuffle(dataset)
 
-    train_data = dataset[:25000]
-    test_data = dataset[25000:]
+    train_data = dataset[:10]
+    test_data = dataset[10:]
+    # print(train_data)
+    # print(test_data)
 
     classifier = NaiveBayesClassifier.train(train_data)
     print(classify.accuracy(classifier, train_data))
@@ -222,8 +281,9 @@ if __name__ == "__main__":
 
     # print(classifier.show_most_informative_features(10))
 
-    custom_tweet = "I ordered just once from TerribleCo, they screwed up, never used the app again."
+    # custom_tweet = "I ordered just once from TerribleCo, they screwed up, never used the app again."
+    custom_tweet = "The moview was genuinely awesome"
 
     custom_tokens = remove_noise(word_tokenize(custom_tweet))
 
-    # print(custom_tweet, classifier.classify(dict([token, True] for token in custom_tokens)))
+    print(custom_tweet, classifier.classify(dict([token, True] for token in custom_tokens)))
