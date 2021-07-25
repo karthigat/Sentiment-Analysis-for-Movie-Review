@@ -9,17 +9,32 @@ from sklearn.metrics import classification_report,confusion_matrix,accuracy_scor
 from sklearn.model_selection import train_test_split
 # nltk.download('twitter_samples')
 # nltk.download('averaged_perceptron_tagger')
+import seaborn as sns
+from matplotlib import pyplot as plt
+from wordcloud import WordCloud, STOPWORDS
+import matplotlib.colors as mcolors
+from collections import Counter
+import collections
+
+import matplotlib.pyplot as plt
 from sklearn.datasets import fetch_20newsgroups
 import pandas as pd
 import re
 import nltk
 from nltk import classify
+from sklearn.metrics import f1_score
 from nltk import NaiveBayesClassifier
 import base64
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import Pipeline
 from sklearn import preprocessing
+from sklearn.linear_model import Perceptron, LogisticRegression
+from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn import datasets
+from sklearn import metrics
 
 # nltk.download('punkt')
 # nltk.download('stopwords')
@@ -86,29 +101,6 @@ def stopWord(sanitize):
 
     return stopword_data
 
-def remove_noise(tweet_tokens, stop_words=()):
-    cleaned_tokens = []
-
-    for token, tag in pos_tag(tweet_tokens):
-        token = re.sub('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+#]|[!*\(\),]|' \
-                       '(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', token)
-        token = re.sub("(@[A-Za-z0-9_]+)", "", token)
-
-        if tag.startswith("NN"):
-            pos = 'n'
-        elif tag.startswith('VB'):
-            pos = 'v'
-        else:
-            pos = 'a'
-
-        lemmatizer = WordNetLemmatizer()
-        token = lemmatizer.lemmatize(token, pos)
-
-        if len(token) > 0 and token not in string.punctuation and token.lower() not in stop_words:
-            cleaned_tokens.append(token.lower())
-
-    return cleaned_tokens
-
 def strip_html_tags(text):
     for i in text:
         # print(i)
@@ -145,23 +137,22 @@ if __name__ == "__main__":
     # stop_words = stopwords.words('english')
     tweet_tokens = token(remove_url)
     remove_stopwords = stopWord(tweet_tokens)
-    after_lemmitization = remove_noise(tweet_tokens, remove_stopwords)
-    print(after_lemmitization)
+
+    #print(tweet_tokens)
     # san = [['this', 'is', 'rose', 'smells', 'good'], ['this', 'is', 'blue', 'moon']]
-    for i in after_lemmitization:
+    for i in remove_stopwords:
         join_words = ' '.join(i)
         join_token.append(join_words)
-    # print(join_token)
+
         # break
     # print("join")
     # print(join_token)
     # y = target.apply(le.fit_transform)
-    X_train, X_test, y_train, y_test = train_test_split(join_token, target, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(join_token, target, test_size=0.3, random_state=1)
     train_data = X_train
     test_data = X_test
     train_target = y_train
     test_target = y_test
-
 
     # twenty_train = fetch_20newsgroups(subset='train', shuffle=True)
     # print(twenty_train.data)
@@ -176,39 +167,86 @@ if __name__ == "__main__":
     # print(y_train.shape)
     # y_test = target[10:]
 
-
     count_vect = CountVectorizer()
     X_train_counts = count_vect.fit_transform(train_data)
     X_test_counts = count_vect.transform(test_data)
-    # print(X_train_counts)
-
-    # tfidf_transformer = TfidfTransformer()
-    # X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
-    # # print(X_train_tfidf)
+    print('BOW_cv_train:', X_train_counts.shape)
+    print('BOW_cv_test:', X_test_counts.shape)
 
 
+    tfidf_transformer = TfidfTransformer()
+    X_train_tfidf = tfidf_transformer.fit_transform(X_train_counts)
 
-    # clf = MultinomialNB().fit(X_train_counts, train_target)
-    clf = MultinomialNB()
-    # text_clf = Pipeline([('vect', CountVectorizer()),
-    #                      ('tfidf', TfidfTransformer()),
-    #                      ('clf', MultinomialNB()),])
-    text_clf = clf.fit(X_train_counts, train_target)
-    print(text_clf)
-    predicted = text_clf.predict(X_test_counts)
-    # y_predicted_labels = le.inverse_transform(predicted)
-    # print(y_predicted_labels)
-    data = {'Review': test_data, 'labels': predicted}
+    tfidf_transformer_test = TfidfTransformer()
+    X_test_tfidf = tfidf_transformer_test.fit_transform(X_test_counts)
+
+    sc = StandardScaler(with_mean=False)
+    sc.fit(X_train_tfidf)
+    X_train_std = sc.transform(X_train_tfidf)
+    X_test_std = sc.transform(X_test_tfidf)
+
+    # Instantiate the Support Vector Classifier (SVC)
+    from sklearn.svm import LinearSVC
+
+    svc = LinearSVC(dual=False)
+
+    # Fit the model
+    text_svc = svc.fit(X_train_std, train_target)
+
+    #print(text_svc)
+    # Make the predictions
+    y_predict = svc.predict(X_test_std)
+
+    data = {'Review': test_data, 'labels': y_predict}
     df = pd.DataFrame(data)
     print(df.tail(10))
     print(type(test_data))
     print(X_test_counts.shape)
-    print(type(predicted))
-    classification  = classification_report(test_target,predicted,target_names=['Positive','Negative'])
+    print(type(y_predict))
+    classification  = classification_report(test_target,y_predict,target_names=['Positive','Negative'])
     print(classification)
-    print(np.mean(predicted == test_target))
-    print(metrics.accuracy_score(test_target, predicted))
+    print(np.mean(y_predict == test_target))
 
-    data = {'Reviews': ['I ordered just once from TerribleCo, they screwed up, never used the app again.',
-                        'it is beautiful', 'I am angry', 'i am not interested in this flim', 'it worth watching'],
-            'Movies': ['wizard of oz', 'evil dead', 'alien', 'Zombie', 'wall street']}
+    # Measure the performance
+    print("Accuracy score %.3f" % metrics.accuracy_score(test_target, y_predict))
+
+    # Model Precision: what percentage of positive tuples are labeled as such?
+    print("Precision:", metrics.precision_score(test_target, y_predict))
+
+    # Model Recall: what percentage of positive tuples are labelled as such?
+    print("Recall:", metrics.recall_score(y_test, y_predict))
+
+    # F1 score
+    print("F1 score:", f1_score(y_test, y_predict, average='macro'))
+
+
+target_cnt = Counter(target)
+
+plt.figure(figsize=(16,8))
+plt.bar(target_cnt.keys(), target_cnt.values())
+plt.title("Dataset labels distribuition")
+plt.show()
+
+#Confusion matrix
+
+conf = confusion_matrix(test_target, y_predict)
+print(conf)
+
+cm = pd.DataFrame(
+    conf, index = [i for i in ['0', '1']],
+    columns = [i for i in ['0', '1']]
+)
+
+plt.figure(figsize = (12,7))
+sns.heatmap(cm, annot=True, fmt="d")
+plt.show()
+
+plt.figure(figsize=(20, 10))
+WC = WordCloud(width=1600, height=800, background_color="rgba(255, 255, 255, 0)").generate(train_data[0])
+plt.imshow(WC)
+plt.axis("off")
+plt.tight_layout(pad=0)
+plt.show()
+plt.savefig('wordcloud.png', facecolor='k', bbox_inches='tight')
+
+
