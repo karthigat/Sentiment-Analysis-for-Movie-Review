@@ -130,6 +130,8 @@ if __name__ == "__main__":
     sentiment_new['sentiment_words'] = sentiment_new.sentiment.apply(lambda x: 'positive' if x == 1 else 'negative')
     review = sentiment_new['review']
     target = sentiment_new['sentiment']
+    print(target)
+    print(review.head(10))
     lwr_case_positive = lower_case(review)
     review_positive_remhtml = strip_html_tags(lwr_case_positive)
     remove_punct_positive = punctuation(review_positive_remhtml)
@@ -153,6 +155,7 @@ if __name__ == "__main__":
     test_data = X_test
     train_target = y_train
     test_target = y_test
+
 
     # twenty_train = fetch_20newsgroups(subset='train', shuffle=True)
     # print(twenty_train.data)
@@ -199,6 +202,15 @@ if __name__ == "__main__":
 
     data = {'Review': test_data, 'labels': y_predict}
     df = pd.DataFrame(data)
+    positive_data = df.loc[df['labels'] == 1]
+    positive_review = positive_data['Review'].tolist()
+    positive_words = ' '.join(positive_review)
+    print(positive_words)
+    negative_data = df.loc[df['labels'] == 0]
+    negative_review = negative_data['Review'].tolist()
+    negative_words = ' '.join(negative_review)
+    print(negative_words)
+
     print(df.tail(10))
     print(type(test_data))
     print(X_test_counts.shape)
@@ -220,33 +232,41 @@ if __name__ == "__main__":
     print("F1 score:", f1_score(y_test, y_predict, average='macro'))
 
 
-target_cnt = Counter(target)
+    target_cnt = Counter(target)
 
-plt.figure(figsize=(16,8))
-plt.bar(target_cnt.keys(), target_cnt.values())
-plt.title("Dataset labels distribuition")
-plt.show()
+    plt.figure(figsize=(16,8))
+    plt.bar(target_cnt.keys(), target_cnt.values())
+    plt.title("Dataset labels distribuition")
+    plt.show()
 
-#Confusion matrix
+    #Confusion matrix
 
-conf = confusion_matrix(test_target, y_predict)
-print(conf)
+    conf = confusion_matrix(test_target, y_predict)
+    print(conf)
 
-cm = pd.DataFrame(
-    conf, index = [i for i in ['0', '1']],
-    columns = [i for i in ['0', '1']]
-)
+    cm = pd.DataFrame(
+        conf, index = [i for i in ['0', '1']],
+        columns = [i for i in ['0', '1']]
+    )
 
-plt.figure(figsize = (12,7))
-sns.heatmap(cm, annot=True, fmt="d")
-plt.show()
+    plt.figure(figsize = (12,7))
+    sns.heatmap(cm, annot=True, fmt="d")
+    plt.show()
 
-plt.figure(figsize=(20, 10))
-WC = WordCloud(width=1600, height=800, background_color="rgba(255, 255, 255, 0)").generate(train_data[0])
-plt.imshow(WC)
-plt.axis("off")
-plt.tight_layout(pad=0)
-plt.show()
-plt.savefig('wordcloud.png', facecolor='k', bbox_inches='tight')
+    plt.figure(figsize=(20, 10))
+    WC = WordCloud(width=1600, height=800, background_color="rgba(255, 255, 255, 0)").generate(positive_words)
+    plt.imshow(WC)
+    plt.axis("off")
+    plt.tight_layout(pad=0)
+    plt.show()
+    plt.savefig('wordcloud.png', facecolor='k', bbox_inches='tight')
+
+    plt.figure(figsize=(20, 10))
+    WC = WordCloud(width=1600, height=800, background_color="rgba(255, 255, 255, 0)").generate(negative_words)
+    plt.imshow(WC)
+    plt.axis("off")
+    plt.tight_layout(pad=0)
+    plt.show()
+    plt.savefig('wordcloud.png', facecolor='k', bbox_inches='tight')
 
 

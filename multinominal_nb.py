@@ -145,10 +145,10 @@ if __name__ == "__main__":
     # stop_words = stopwords.words('english')
     tweet_tokens = token(remove_url)
     remove_stopwords = stopWord(tweet_tokens)
-    after_lemmitization = remove_noise(tweet_tokens, remove_stopwords)
-    print(after_lemmitization)
+    #after_lemmitization = remove_noise(tweet_tokens, remove_stopwords)
+
     # san = [['this', 'is', 'rose', 'smells', 'good'], ['this', 'is', 'blue', 'moon']]
-    for i in after_lemmitization:
+    for i in remove_stopwords:
         join_words = ' '.join(i)
         join_token.append(join_words)
     # print(join_token)
