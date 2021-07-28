@@ -185,7 +185,7 @@ if __name__ == "__main__":
     print(classification)
     print(np.mean(predicted == test_target))
     print(metrics.accuracy_score(test_target, predicted))
-
-    data = {'Reviews': ['I ordered just once from TerribleCo, they screwed up, never used the app again.',
-                        'it is beautiful', 'I am angry', 'i am not interested in this flim', 'it worth watching'],
-            'Movies': ['wizard of oz', 'evil dead', 'alien', 'Zombie', 'wall street']}
+    #
+    # data = {'Reviews': ['I ordered just once from TerribleCo, they screwed up, never used the app again.',
+    #                     'it is beautiful', 'I am angry', 'i am not interested in this flim', 'it worth watching'],
+    #         'Movies': ['wizard of oz', 'evil dead', 'alien', 'Zombie', 'wall street']}
