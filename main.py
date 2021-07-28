@@ -18,10 +18,6 @@ import matplotlib.pyplot as plt
 from nltk.stem import PorterStemmer
 from nltk.tokenize import word_tokenize
 
-
-
-
-
 def lower_case(sanitize):
     data_details_lowercase = sanitize.str.lower()
     return data_details_lowercase
