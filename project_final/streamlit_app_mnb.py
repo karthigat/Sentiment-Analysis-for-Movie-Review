@@ -19,6 +19,7 @@ Image = reviews.loc[reviews['Status'] == option, 'image']
 Image_list = Image.tolist()
 list_movie = movies.tolist()
 
+#https://discuss.streamlit.io/t/grid-of-images-with-the-same-height/10668
 try:
     idx = 0
     for _ in range(len(Image_list) - 1):
