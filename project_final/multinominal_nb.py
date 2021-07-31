@@ -1,39 +1,19 @@
 import nltk
-from nltk.stem.wordnet import WordNetLemmatizer
-from nltk.corpus import twitter_samples, stopwords
-from nltk.tag import pos_tag
-from nltk.tokenize import word_tokenize
-from nltk import FreqDist, classify, NaiveBayesClassifier
-from sklearn import metrics
-from sklearn.metrics import classification_report,confusion_matrix,accuracy_score
+from nltk.corpus import stopwords
+from sklearn import metrics, preprocessing
+from sklearn.metrics import classification_report,confusion_matrix
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-# nltk.download('twitter_samples')
 # nltk.download('averaged_perceptron_tagger')
-from sklearn.datasets import fetch_20newsgroups
 import pandas as pd
 import re
-import nltk
-from nltk import classify
-from nltk import NaiveBayesClassifier
-import base64
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.pipeline import Pipeline
-from sklearn import preprocessing
-
-# nltk.download('punkt')
-# nltk.download('stopwords')
-# nltk.download('wordnet')
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-from gensim.models.phrases import Phrases, Phraser
-from gensim.models import Word2Vec
 import matplotlib.pyplot as plt
-from nltk.stem import PorterStemmer
-from nltk.tokenize import word_tokenize
-
-import re, string, random
 from bs4 import BeautifulSoup
 #import streamlit as st
 from sklearn.feature_extraction.text import CountVectorizer
@@ -44,11 +24,13 @@ from wordcloud import WordCloud, STOPWORDS
 from collections import Counter
 from sklearn.metrics import f1_score
 
+# converting to lower case
 def lower_case(sanitize):
     data_lowercase = []
     data_details_lowercase = sanitize.str.lower()
     return data_details_lowercase
 
+# removing url
 def url(sanitize):
     url_all = []
     for word in sanitize:
@@ -56,7 +38,7 @@ def url(sanitize):
         url_all.append(data_details_url)
     return url_all
 
-
+# removing punctuation
 def punctuation(sanitize):
     data_punct = []
     for i in sanitize:
@@ -64,7 +46,7 @@ def punctuation(sanitize):
         data_punct.append(data_details_punct)
     return data_punct
 
-
+#tokenizing
 def token(sanitize):
     data_token = []
     for i in sanitize:
@@ -72,7 +54,7 @@ def token(sanitize):
         data_token.append(tokenize)
     return data_token
 
-
+# stopwords
 def stopWord(sanitize):
     stopword_data = []
     STOPWORDS = set(stopwords.words('english'))
@@ -84,6 +66,7 @@ def stopWord(sanitize):
         stopword_data.append(sani_stopword)
     return stopword_data
 
+# removing html
 def strip_html_tags(text):
     ren_htmltags = []
     for i in text:
@@ -92,6 +75,7 @@ def strip_html_tags(text):
         ren_htmltags.append(stripped_text)
     return ren_htmltags
 
+# lemitizing the words
 def lemitization(sanitize):
     data_lem = []
     for j in sanitize:
@@ -99,6 +83,7 @@ def lemitization(sanitize):
         data_lem.append(lem)
     return data_lem
 
+#join the tokens
 def join_tokens(remove_stopwords):
     join_token = []
     for i in remove_stopwords:
@@ -106,6 +91,7 @@ def join_tokens(remove_stopwords):
         join_token.append(join_words)
     return join_token
 
+#join positive words
 def join_positive(positive):
     positive_join = []
     for i in positive:
@@ -121,11 +107,12 @@ if __name__ == "__main__":
     lemiti = WordNetLemmatizer()
 
     # getting dataset
-    sentiment_new = pd.read_csv(r'prepd_data.csv', error_bad_lines=False, sep=',')
+    sentiment_new = pd.read_csv(r'IMDB_Dataset.csv', error_bad_lines=False, sep=',')
     sentiment_new.head(10)
     review = sentiment_new['review']
     target = sentiment_new['sentiment_label']
 
+    print(".......processing........")
     # pre processing
     lwr_case_positive = lower_case(review)
     review_positive_remhtml = strip_html_tags(lwr_case_positive)
@@ -136,12 +123,14 @@ if __name__ == "__main__":
     lemitie_words = lemitization(remove_stopwords)
     join_stopwords = join_tokens(lemitie_words)
 
+  
     # spliting test and train dataset
     X_train, X_test, y_train, y_test = train_test_split(join_stopwords, target, test_size=0.3, random_state=1)
     train_data = X_train
     test_data = X_test
     train_target = y_train
     test_target = y_test
+
 
     count_vect = CountVectorizer()
     X_train_counts = count_vect.fit_transform(train_data)
@@ -183,7 +172,7 @@ if __name__ == "__main__":
     # F1 score
     print("F1 score:", f1_score(y_test, predicted, average='macro'))
 
-    # end
+
     # streamlit
 
     data_lowercase = []
@@ -198,7 +187,8 @@ if __name__ == "__main__":
     st_reviews = pd.read_csv(r'Movie_images\Streamlit_movieDataset.csv')
 
     st_review = st_reviews['Review']
-
+    
+    # preprocessing
     st_lower_value = lower_case(st_review)
     st_remove_html = strip_html_tags(st_lower_value)
     st_remove_punct = punctuation(st_remove_html)
@@ -231,24 +221,25 @@ if __name__ == "__main__":
         conf, index=[i for i in ['0', '1']],
         columns=[i for i in ['0', '1']]
     )
-
+    
+    # heatmap
     plt.figure(figsize=(12, 7))
     sns.heatmap(cm, annot=True, fmt="d")
     plt.tight_layout(pad=0)
-    plt.savefig('heatmap_mnb')
-    plt.show()
+    plt.savefig('heatmap_mnb.png')
 
+    # word cloud
     plt.figure(figsize=(20, 10))
     WC = WordCloud(width=1600, height=800, background_color="rgba(255, 255, 255, 0)").generate(positive_words)
     plt.imshow(WC)
     plt.axis("off")
-
-    plt.show()
-    plt.savefig('wordcloud_mnb.png', facecolor='k', bbox_inches='tight')
+   
+    plt.savefig('wordcloud_positive_mnb.png', facecolor='k', bbox_inches='tight')
 
     WC = WordCloud(width=1600, height=800, background_color="rgba(255, 255, 255, 0)").generate(negative_words)
     plt.imshow(WC)
     plt.axis("off")
 
-    plt.show()
-    plt.savefig('wordcloud_mnb.png', facecolor='k', bbox_inches='tight')
+    plt.savefig('wordcloud_negative_mnb.png', facecolor='k', bbox_inches='tight')
+
+    print(".......completed..........")
