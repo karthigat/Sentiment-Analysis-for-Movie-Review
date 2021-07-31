@@ -1,16 +1,16 @@
-from sklearn.metrics import classification_report,confusion_matrix,accuracy_score
+from sklearn.metrics import classification_report,confusion_matrix
 import pandas as pd
 import nltk
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn import metrics
-# nltk.download('punkt')
-# nltk.download('stopwords')
-# nltk.download('wordnet')
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-import re, string, random
+import re
 from bs4 import BeautifulSoup
 from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
@@ -21,12 +21,13 @@ from wordcloud import WordCloud, STOPWORDS
 from collections import Counter
 from sklearn.metrics import f1_score
 
-
+# converting to lower case
 def lower_case(sanitize):
     data_lowercase = []
     data_details_lowercase = sanitize.str.lower()
     return data_details_lowercase
 
+# remove url
 def url(sanitize):
     url_all = []
     for word in sanitize:
@@ -34,7 +35,7 @@ def url(sanitize):
         url_all.append(data_details_url)
     return url_all
 
-
+#remove punctuation
 def punctuation(sanitize):
     data_punct = []
     for i in sanitize:
@@ -42,7 +43,7 @@ def punctuation(sanitize):
         data_punct.append(data_details_punct)
     return data_punct
 
-
+#tokenize
 def token(sanitize):
     data_token = []
     for i in sanitize:
@@ -50,7 +51,7 @@ def token(sanitize):
         data_token.append(tokenize)
     return data_token
 
-
+#remove stopwords
 def stopWord(sanitize):
     stopword_data = []
     STOPWORDS = set(stopwords.words('english'))
@@ -62,6 +63,7 @@ def stopWord(sanitize):
         stopword_data.append(sani_stopword)
     return stopword_data
 
+#remove html tags
 def strip_html_tags(text):
     ren_htmltags = []
     for i in text:
@@ -70,6 +72,7 @@ def strip_html_tags(text):
         ren_htmltags.append(stripped_text)
     return ren_htmltags
 
+#lemitize the words
 def lemitization(sanitize):
     data_lem = []
     for j in sanitize:
@@ -77,12 +80,14 @@ def lemitization(sanitize):
         data_lem.append(lem)
     return data_lem
 
+#join tokens
 def join_tokens(remove_stopwords):
     join_token = []
     for i in remove_stopwords:
         join_words = ' '.join(i)
         join_token.append(join_words)
     return join_token
+
 
 def join_positive(positive):
     positive_join = []
@@ -99,10 +104,12 @@ if __name__ == "__main__":
     lemiti = WordNetLemmatizer()
 
     # getting dataset
-    sentiment_new = pd.read_csv(r'prepd_data.csv', error_bad_lines=False, sep=',')
+    sentiment_new = pd.read_csv(r'IMDB_Dataset.csv', error_bad_lines=False, sep=',')
     sentiment_new.head(10)
     review = sentiment_new['review']
     target = sentiment_new['sentiment_label']
+
+    print(".........Processing........")
 
     #pre processing
     lwr_case_positive = lower_case(review)
@@ -180,8 +187,6 @@ if __name__ == "__main__":
     # F1 score
     print("F1 score:", f1_score(y_test, y_predict, average='macro'))
 
-
-    # end
     # streamlit
 
     data_lowercase = []
@@ -238,20 +243,22 @@ if __name__ == "__main__":
     plt.figure(figsize=(12, 7))
     sns.heatmap(cm, annot=True, fmt="d")
     plt.tight_layout(pad=0)
-    plt.savefig('heatmap_svm')
-    plt.show()
+    plt.savefig('heatmap_svm.png')
+
 
     plt.figure(figsize=(20, 10))
     WC = WordCloud(width=1600, height=800, background_color="rgba(255, 255, 255, 0)").generate(positive_words)
     plt.imshow(WC)
     plt.axis("off")
 
-    plt.show()
-    plt.savefig('wordcloud_svm.png', facecolor='k', bbox_inches='tight')
+
+    plt.savefig('wordcloud_positive_svm.png', facecolor='k', bbox_inches='tight')
 
     WC = WordCloud(width=1600, height=800, background_color="rgba(255, 255, 255, 0)").generate(negative_words)
     plt.imshow(WC)
     plt.axis("off")
 
-    plt.show()
-    plt.savefig('wordcloud_svm.png', facecolor='k', bbox_inches='tight')
+  
+    plt.savefig('wordcloud_negaitive_svm.png', facecolor='k', bbox_inches='tight')
+
+    print("........completed........")
