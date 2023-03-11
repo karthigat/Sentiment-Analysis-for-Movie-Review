@@ -30,19 +30,27 @@ Step 3: Check the browser for output
 Instruction to run SVM:
 
 Step 1: Run svm_classification.py(it will generate movie dataset.csv)
+
 Step 2: Run streamlit_app_svm.py(Dashboard will be open in the browser)
+
 Step 3: Check the browser for output
 
 File generated:
 
 1. From multinominal_nb.py following files are generated:
 	a. heatmap_mnb.png
+
 	b. wordcloud_positive_mnb.png
+	
 	c. wordcloud_negative_mnb.png
+	
 	d. Movie image folder -> movie_dataset_nb.csv
 
 2. From svm_classification.py following files are generated:
 	a. heatmap_svm.png
-	a. wordcloud_positive_svm.png
+	
+	b. wordcloud_positive_svm.png
+	
 	c. wordcloud_negative_svm.png
+	
 	d. Movie image folder -> movie_dataset_svm.csv
