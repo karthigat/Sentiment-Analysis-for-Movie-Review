@@ -1,0 +1,11 @@
+nltk
+scikit-learn
+pandas
+Counter
+wordcloud
+matplotlib
+seaborn
+numpy
+beautifulsoup4
+streamlit
+regex
