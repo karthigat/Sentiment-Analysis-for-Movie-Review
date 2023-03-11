@@ -22,7 +22,9 @@ Movie_images - folder contains
 Instruction to run Multinomial Navie Baysian:
 
 Step 1: Run multinominal_nb.py(it will generate movie dataset.csv)
+
 Step 2: Run streamlit_app_mnb.py(Dashboard will be open in the browser)
+
 Step 3: Check the browser for output
 
 Instruction to run SVM:
