@@ -6,6 +6,7 @@ Artificial Intelligence Project
 Files attached:
 
 1. multinominal_nb.py - Multinominal Naive Baysian model
+
 2. svm_classification.py - SVM model
 3. streamlit_app_mnb.py - Streamlit app for multinominal model
 4. streamlit_app_svm.py - Streamlit app for SVM model
